@@ -1,0 +1,42 @@
+name: Build fluiggersWidget
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 11
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '11'
+
+      - name: Extrair WAR original e baixar APIs públicas (Maven Central)
+        run: |
+          mkdir -p war_tmp libs_tmp
+          unzip -q target/fluiggersWidget.war -d war_tmp
+          curl -fsSL -o libs_tmp/javaee-api.jar https://repo1.maven.org/maven2/javax/javaee-api/8.0.1/javaee-api-8.0.1.jar
+          curl -fsSL -o libs_tmp/slf4j-api.jar https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar
+
+      - name: Compilar BaseController.java e atualizar o WAR
+        run: |
+          javac -encoding UTF-8 --release 11 \
+            -cp "war_tmp/WEB-INF/classes:war_tmp/WEB-INF/lib/*:libs_tmp/*" \
+            -d war_tmp/WEB-INF/classes \
+            src/main/java/com/fluiggers/controller/BaseController.java
+
+          rm -f fluiggersWidget.war
+          (cd war_tmp && jar -cf ../fluiggersWidget.war .)
+
+      - name: Disponibilizar fluiggersWidget.war para download
+        uses: actions/upload-artifact@v4
+        with:
+          name: fluiggersWidget
+          path: fluiggersWidget.war
