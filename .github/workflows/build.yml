@@ -25,12 +25,14 @@ jobs:
           curl -fsSL -o libs_tmp/javaee-api.jar https://repo1.maven.org/maven2/javax/javaee-api/8.0.1/javaee-api-8.0.1.jar
           curl -fsSL -o libs_tmp/slf4j-api.jar https://repo1.maven.org/maven2/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar
 
-      - name: Compilar BaseController.java e atualizar o WAR
+      - name: Compilar classes alteradas e atualizar o WAR
         run: |
           javac -encoding UTF-8 --release 11 \
             -cp "war_tmp/WEB-INF/classes:war_tmp/WEB-INF/lib/*:libs_tmp/*" \
             -d war_tmp/WEB-INF/classes \
-            src/main/java/com/fluiggers/controller/BaseController.java
+            src/main/java/com/fluiggers/controller/BaseController.java \
+            src/main/java/com/fluiggers/service/WidgetService.java \
+            src/main/java/com/fluiggers/controller/WidgetController.java
 
           rm -f fluiggersWidget.war
           (cd war_tmp && jar -cf ../fluiggersWidget.war .)
