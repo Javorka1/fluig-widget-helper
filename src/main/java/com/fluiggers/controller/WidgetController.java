@@ -14,6 +14,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import com.fluiggers.dto.WidgetDto;
 import com.fluiggers.service.WidgetService;
@@ -52,7 +53,12 @@ public class WidgetController extends BaseController {
 
             return inputStream;
         } catch (FileNotFoundException e) {
-            throw new NotFoundException();
+            throw new NotFoundException(
+                Response.status(Response.Status.NOT_FOUND)
+                    .entity(e.getMessage())
+                    .type(MediaType.TEXT_PLAIN)
+                    .build()
+            );
         } catch (Exception e) {
             log.error("Erro efetuar download da widget \"" + filename + "\"", e);
             throw new InternalServerErrorException("Consulte o Log do Fluig para mais informações.");
